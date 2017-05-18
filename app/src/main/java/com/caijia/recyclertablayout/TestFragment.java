@@ -8,16 +8,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.text.MessageFormat;
+
 public class TestFragment extends Fragment {
 
     static final String POSITION_EXTRA = "position:id";
 
-    int position = -1;
+    String msg ;
 
-    public static TestFragment getInstance(int position) {
+    public static TestFragment getInstance(String msg) {
         TestFragment f = new TestFragment();
         Bundle args = new Bundle();
-        args.putInt(POSITION_EXTRA, position);
+        args.putString(POSITION_EXTRA, msg);
         f.setArguments(args);
         return f;
     }
@@ -25,7 +27,7 @@ public class TestFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        position = getArguments().getInt(POSITION_EXTRA);
+        msg = getArguments().getString(POSITION_EXTRA);
     }
 
     @Nullable
@@ -33,15 +35,7 @@ public class TestFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         TextView textView = new TextView(container.getContext());
-        textView.setText("Item position = " + position
-                + "---savedInstanceState="
-                + (savedInstanceState != null ? savedInstanceState.getString("args") : ""));
+        textView.setText(MessageFormat.format("Item position = {0}", msg));
         return textView;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("args", "Item=" + position);
     }
 }
