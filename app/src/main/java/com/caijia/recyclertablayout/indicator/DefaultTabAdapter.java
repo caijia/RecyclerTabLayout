@@ -20,7 +20,7 @@ import com.caijia.recyclertablayout.R;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import static android.view.ViewGroup.LayoutParams.*;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.caijia.recyclertablayout.indicator.TabLayoutAttribute.MODE_EQ_MAX_WIDTH;
 import static com.caijia.recyclertablayout.indicator.TabLayoutAttribute.MODE_FIXED;
 import static com.caijia.recyclertablayout.indicator.TabLayoutAttribute.MODE_MATCH_PARENT;
