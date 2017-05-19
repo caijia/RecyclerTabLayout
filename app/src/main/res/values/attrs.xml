@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="RecyclerTabLayout">
+        <attr name="recyclerTabIndicatorHeight" format="dimension" />
+        <attr name="layout_height" format="enum" />
+        <attr name="recyclerTabIndicatorColor" format="color" />
+        <attr name="recyclerTabPadding" format="dimension" />
+        <attr name="recyclerTabPaddingStart" format="dimension" />
+        <attr name="recyclerTabPaddingTop" format="dimension" />
+        <attr name="recyclerTabPaddingEnd" format="dimension" />
+        <attr name="recyclerTabPaddingBottom" format="dimension" />
+        <attr name="recyclerTabTextColor" format="color" />
+        <attr name="recyclerTabTextSize" format="dimension" />
+        <attr name="recyclerTabSelectedTextColor" format="color" />
+        <attr name="recyclerTabBackground" format="reference" />
+        <attr name="recyclerTabWidthPercent" format="float"/>
+        <attr name="recyclerTabWidthMode" format="enum" >
+            <enum name="fixed" value="0" />
+            <enum name="scrollable" value="1" />
+        </attr>
+        <attr name="recyclerTabIndicatorWidthMode" format="enum">
+            <enum name="matchParent" value="0" />
+            <enum name="wrapContent" value="1" />
+            <enum name="maxWidth" value="2" />
+        </attr>
+    </declare-styleable>
+</resources>

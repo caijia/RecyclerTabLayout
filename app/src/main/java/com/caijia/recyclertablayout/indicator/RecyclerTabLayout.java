@@ -24,15 +24,14 @@ import java.util.Map;
 public class RecyclerTabLayout extends RecyclerView {
 
     private ViewPager viewPager;
-
     private int position;
     private float positionOffset;
     private ViewMeasureHelper measureHelper;
-
     private PageAdapterChangeListener pageAdapterChangeListener;
     private PageChangeListener pageChangeListener;
     private TabAdapter tabAdapter;
     private ArrayMap<PagerAdapter, DataSetObserver> pageDataObserverMap;
+    private TabLayoutAttribute attributeSet;
 
     public RecyclerTabLayout(Context context) {
         this(context, null);
@@ -44,10 +43,19 @@ public class RecyclerTabLayout extends RecyclerView {
 
     public RecyclerTabLayout(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        attributeSet = new TabLayoutAttribute(getContext(), attrs);
         pageDataObserverMap = new ArrayMap<>();
         measureHelper = new ViewMeasureHelper(this);
         pageAdapterChangeListener = new PageAdapterChangeListener();
         pageChangeListener = new PageChangeListener(this);
+    }
+
+    public void setupWithViewPager(@NonNull ViewPager viewPager) {
+        DefaultTabAdapter adapter = new DefaultTabAdapter(viewPager);
+        if (attributeSet != null) {
+            adapter.setAttribute(attributeSet);
+        }
+        setupWithAdapter(adapter);
     }
 
     public void setupWithAdapter(@NonNull TabAdapter tabAdapter) {

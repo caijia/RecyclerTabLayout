@@ -1,6 +1,5 @@
 package com.caijia.recyclertablayout.indicator;
 
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -21,30 +20,35 @@ import com.caijia.recyclertablayout.R;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import static android.view.ViewGroup.LayoutParams.*;
+import static com.caijia.recyclertablayout.indicator.TabLayoutAttribute.MODE_EQ_MAX_WIDTH;
+import static com.caijia.recyclertablayout.indicator.TabLayoutAttribute.MODE_FIXED;
+import static com.caijia.recyclertablayout.indicator.TabLayoutAttribute.MODE_MATCH_PARENT;
+import static com.caijia.recyclertablayout.indicator.TabLayoutAttribute.MODE_SCROLLABLE;
+import static com.caijia.recyclertablayout.indicator.TabLayoutAttribute.MODE_WRAP_CONTENT;
+
 /**
  * Created by cai.jia on 2017/5/17 0017
  */
 
 public class DefaultTabAdapter extends TabAdapter<DefaultTabAdapter.DefaultTabVH> {
 
-    public static final int MATCH_PARENT = 1;
-    public static final int WRAP_CONTENT = 2;
-    public static final int EQ_MAX_WIDTH = 3;
-
-    public static final int MODE_SCROLLABLE = 4;
-    public static final int MODE_FIXED = 5;
+    private int tabIndicatorHeight;
+    private int tabIndicatorColor;
+    private int tabPaddingStart;
+    private int tabPaddingTop;
+    private int tabPaddingEnd;
+    private int tabPaddingBottom;
+    private int tabTextColor;
+    private int tabTextSize;
+    private int tabSelectedTextColor;
+    private int tabBackground;
+    private int tabMode;
+    private int tabIndicatorWidthMode;
+    private float tabWidthPercent;
     private ViewPager viewPager;
     private PagerAdapter pagerAdapter;
     private Paint paint;
-
-    private int indicatorHeight;
-    private int paddingLR;
-    private int widthMode;
-    private int scrollMode;
-    private int selectedColor;
-    private int normalColor;
-    private float textSize;
-    private int tabBackground;
     private ViewGroup parent;
 
     public DefaultTabAdapter(@NonNull ViewPager viewPager) {
@@ -52,7 +56,6 @@ public class DefaultTabAdapter extends TabAdapter<DefaultTabAdapter.DefaultTabVH
         checkAndInitAdapter(viewPager);
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setAntiAlias(true);
-        initDefaultValue(viewPager.getContext());
     }
 
     private void checkAndInitAdapter(@NonNull ViewPager viewPager) {
@@ -62,30 +65,25 @@ public class DefaultTabAdapter extends TabAdapter<DefaultTabAdapter.DefaultTabVH
         pagerAdapter = viewPager.getAdapter();
     }
 
-    private void initDefaultValue(Context context) {
-        indicatorHeight = dpToPx(context, 2);
-        widthMode = WRAP_CONTENT;
-        scrollMode = MODE_FIXED;
-        textSize = 14;
-    }
-
     @Override
     public DefaultTabVH onCreateViewHolder(ViewGroup parent, int viewType) {
         this.parent = parent;
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_text_view, parent, false);
-        DefaultTabVH holder = new DefaultTabVH(view);
-        holder.itemView.setPadding(paddingLR, 0, paddingLR, 0);
-        holder.textView.setTextSize(textSize);
-        holder.itemView.setBackgroundResource(tabBackground);
-        return holder;
+        return new DefaultTabVH(view);
     }
 
     @Override
     public void onBindViewHolder(DefaultTabVH holder, int position) {
-        if (scrollMode == MODE_FIXED) {
-            holder.itemView.getLayoutParams().width = parent.getMeasuredWidth() / getItemCount();
+        holder.itemView.getLayoutParams().width = tabMode == MODE_FIXED
+                ? parent.getMeasuredWidth() / getItemCount() : WRAP_CONTENT;
+        if (tabWidthPercent != 0) {
+            holder.itemView.getLayoutParams().width = (int) (parent.getMeasuredWidth() / tabWidthPercent);
         }
+        holder.textView.setTextSize(TypedValue.COMPLEX_UNIT_PX,tabTextSize);
+        holder.textView.setTextColor(tabTextColor);
+        holder.textView.setPadding(tabPaddingStart, tabPaddingTop, tabPaddingEnd, tabPaddingBottom);
+        holder.itemView.setBackgroundResource(tabBackground);
         holder.textView.setText(pagerAdapter.getPageTitle(position));
     }
 
@@ -108,17 +106,17 @@ public class DefaultTabAdapter extends TabAdapter<DefaultTabAdapter.DefaultTabVH
     public void drawIndicator(Canvas canvas, ViewMeasureHelper helper,
                               @Nullable DefaultTabVH selectedVH, @Nullable DefaultTabVH nextVH,
                               int position, float positionOffset, @NonNull Rect drawBounds) {
-        switch (widthMode) {
-            case MATCH_PARENT: {
+        switch (tabIndicatorWidthMode) {
+            case MODE_MATCH_PARENT: {
                 canvas.drawRect(
                         drawBounds.left,
-                        drawBounds.bottom - indicatorHeight,
+                        drawBounds.bottom - tabIndicatorHeight,
                         drawBounds.right,
                         drawBounds.bottom, paint);
                 break;
             }
 
-            case WRAP_CONTENT: {
+            case MODE_WRAP_CONTENT: {
                 View parentSelectedView = selectedVH == null ? null : selectedVH.itemView;
                 View parentNextView = nextVH == null ? null : nextVH.itemView;
                 View childSelectedView = selectedVH == null ? null : selectedVH.textView;
@@ -128,57 +126,37 @@ public class DefaultTabAdapter extends TabAdapter<DefaultTabAdapter.DefaultTabVH
                         childSelectedView, childNextView, positionOffset);
                 canvas.drawRect(
                         rect.left,
-                        rect.bottom - indicatorHeight,
+                        rect.bottom - tabIndicatorHeight,
                         rect.right,
                         rect.bottom, paint);
                 break;
             }
 
-            case EQ_MAX_WIDTH: {
+            case MODE_EQ_MAX_WIDTH: {
                 break;
             }
         }
     }
 
-    public void setIndicatorHeight(int indicatorHeight) {
-        this.indicatorHeight = indicatorHeight;
-    }
-
-    public void setPaddingLR(int paddingLR) {
-        this.paddingLR = paddingLR;
-    }
-
-    public void setWidthMode(@WidthMode int widthMode) {
-        this.widthMode = widthMode;
-    }
-
-    public void setSelectedColor(int selectedColor) {
-        this.selectedColor = selectedColor;
-    }
-
-    public void setNormalColor(int normalColor) {
-        this.normalColor = normalColor;
-    }
-
-    public void setTextSize(float textSize) {
-        this.textSize = textSize;
-    }
-
-    public void setTabBackground(int tabBackground) {
-        this.tabBackground = tabBackground;
-    }
-
-    public void setScrollMode(@ScrollMode int scrollMode) {
-        this.scrollMode = scrollMode;
-    }
-
-    private int dpToPx(Context context, float dip) {
-        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip,
-                context.getResources().getDisplayMetrics()));
+    public void setAttribute(TabLayoutAttribute attribute) {
+        tabIndicatorHeight = attribute.tabIndicatorHeight;
+        tabIndicatorColor = attribute.tabIndicatorColor;
+        tabPaddingStart = attribute.tabPaddingStart;
+        tabPaddingTop = attribute.tabPaddingTop;
+        tabPaddingEnd = attribute.tabPaddingEnd;
+        tabPaddingBottom = attribute.tabPaddingBottom;
+        tabTextColor = attribute.tabTextColor;
+        tabSelectedTextColor = attribute.tabSelectedTextColor;
+        tabBackground = attribute.tabBackground;
+        tabTextSize = attribute.tabTextSize;
+        tabMode = attribute.tabMode;
+        tabIndicatorWidthMode = attribute.tabIndicatorWidthMode;
+        tabWidthPercent = attribute.tabWidthPercent;
+        paint.setColor(tabIndicatorColor);
     }
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({MATCH_PARENT, WRAP_CONTENT, EQ_MAX_WIDTH})
+    @IntDef({MODE_MATCH_PARENT, MODE_WRAP_CONTENT, MODE_EQ_MAX_WIDTH})
     public @interface WidthMode {
 
     }
@@ -198,6 +176,4 @@ public class DefaultTabAdapter extends TabAdapter<DefaultTabAdapter.DefaultTabVH
             textView = (TextView) itemView.findViewById(R.id.text);
         }
     }
-
-
 }
