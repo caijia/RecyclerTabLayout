@@ -8,10 +8,9 @@ import android.support.v7.widget.RecyclerView;
  */
 
 public abstract class TabAdapter<VH extends RecyclerView.ViewHolder>
-        extends RecyclerView.Adapter<VH> implements TabIndicator<VH> {
+        extends RecyclerView.Adapter<VH> implements TabContent<VH>{
 
     public abstract ViewPager getViewPager();
 
     public abstract void updatePageAdapter(ViewPager viewPager);
-
 }

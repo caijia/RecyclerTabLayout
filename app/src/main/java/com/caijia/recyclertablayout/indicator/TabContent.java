@@ -6,10 +6,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
-public interface TabIndicator<VH extends RecyclerView.ViewHolder> {
+public interface TabContent<VH extends RecyclerView.ViewHolder> {
 
     /**
-     * 画tab指示器
+     * 画tab内容
      *
      * @param canvas         c
      * @param helper         帮助计算View的大小
@@ -19,8 +19,8 @@ public interface TabIndicator<VH extends RecyclerView.ViewHolder> {
      * @param positionOffset ViewPager偏移量[0,1)
      * @param drawBounds     能画的范围
      */
-    void drawIndicator(Canvas canvas, ViewMeasureHelper helper, @Nullable VH selectedVH,
-                       @Nullable VH nextVH, int position, float positionOffset,
-                       @NonNull Rect drawBounds);
+    void onDrawTabContent(Canvas canvas, ViewSizeHelper helper, @Nullable VH selectedVH,
+                          @Nullable VH nextVH, int position, float positionOffset,
+                          @NonNull Rect drawBounds);
 
 }

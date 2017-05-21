@@ -103,9 +103,9 @@ public class DefaultTabAdapter extends TabAdapter<DefaultTabAdapter.DefaultTabVH
     }
 
     @Override
-    public void drawIndicator(Canvas canvas, ViewMeasureHelper helper,
-                              @Nullable DefaultTabVH selectedVH, @Nullable DefaultTabVH nextVH,
-                              int position, float positionOffset, @NonNull Rect drawBounds) {
+    public void onDrawTabContent(Canvas canvas, ViewSizeHelper helper,
+                                 @Nullable DefaultTabVH selectedVH, @Nullable DefaultTabVH nextVH,
+                                 int position, float positionOffset, @NonNull Rect drawBounds) {
         switch (tabIndicatorWidthMode) {
             case MODE_MATCH_PARENT: {
                 canvas.drawRect(
@@ -122,7 +122,7 @@ public class DefaultTabAdapter extends TabAdapter<DefaultTabAdapter.DefaultTabVH
                 View childSelectedView = selectedVH == null ? null : selectedVH.textView;
                 View childNextView = nextVH == null ? null : nextVH.textView;
 
-                Rect rect = helper.getInternalBounds(parentSelectedView, parentNextView,
+                Rect rect = helper.getChildDrawBounds(parentSelectedView, parentNextView,
                         childSelectedView, childNextView, positionOffset);
                 canvas.drawRect(
                         rect.left,

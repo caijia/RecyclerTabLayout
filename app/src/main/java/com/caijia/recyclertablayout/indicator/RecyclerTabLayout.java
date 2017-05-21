@@ -26,7 +26,7 @@ public class RecyclerTabLayout extends RecyclerView {
     private ViewPager viewPager;
     private int position;
     private float positionOffset;
-    private ViewMeasureHelper measureHelper;
+    private ViewSizeHelper measureHelper;
     private PageAdapterChangeListener pageAdapterChangeListener;
     private PageChangeListener pageChangeListener;
     private TabAdapter tabAdapter;
@@ -45,7 +45,7 @@ public class RecyclerTabLayout extends RecyclerView {
         super(context, attrs, defStyle);
         attributeSet = new TabLayoutAttribute(getContext(), attrs);
         pageDataObserverMap = new ArrayMap<>();
-        measureHelper = new ViewMeasureHelper(this);
+        measureHelper = new ViewSizeHelper(this);
         pageAdapterChangeListener = new PageAdapterChangeListener();
         pageChangeListener = new PageChangeListener(this);
     }
@@ -135,7 +135,7 @@ public class RecyclerTabLayout extends RecyclerView {
         final int selectedWidth = measureHelper.getViewWidth(selectedView);
         final int nextWidth = measureHelper.getViewWidth(nextView);
 
-        int centerOffset = getWidth() / 2 - selectedWidth / 2;
+        int centerOffset = Math.round((getWidth() - selectedWidth) * 0.5f);
         int scrollOffset = (int) ((selectedWidth + nextWidth) * 0.5f * positionOffset);
 
         stopScroll();
@@ -144,8 +144,8 @@ public class RecyclerTabLayout extends RecyclerView {
     }
 
     @Override
-    public void onDraw(Canvas c) {
-        super.onDraw(c);
+    public void draw(Canvas c) {
+        super.draw(c);
         if (tabAdapter == null) {
             return;
         }
@@ -157,7 +157,7 @@ public class RecyclerTabLayout extends RecyclerView {
         View selectedView = layoutManager.findViewByPosition(position);
         View nextView = layoutManager.findViewByPosition(position + 1);
         Rect bounds = measureHelper.getDrawBounds(selectedView, nextView, positionOffset);
-        tabAdapter.drawIndicator(c, measureHelper, selectedViewHolder, nextViewHolder,
+        tabAdapter.onDrawTabContent(c, measureHelper, selectedViewHolder, nextViewHolder,
                 position, positionOffset, bounds);
     }
 
@@ -166,7 +166,7 @@ public class RecyclerTabLayout extends RecyclerView {
         private WeakReference<RecyclerTabLayout> ref;
         private int scrollState;
 
-        public PageChangeListener(RecyclerTabLayout tabLayout) {
+        PageChangeListener(RecyclerTabLayout tabLayout) {
             ref = new WeakReference<>(tabLayout);
         }
 

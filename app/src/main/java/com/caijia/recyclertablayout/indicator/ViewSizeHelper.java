@@ -2,6 +2,7 @@ package com.caijia.recyclertablayout.indicator;
 
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
@@ -12,13 +13,13 @@ import android.view.View;
  * Created by cai.jia on 2017/5/18 0018
  */
 
-public class ViewMeasureHelper {
+public class ViewSizeHelper {
 
     private OrientationHelper horizontalHelper;
     private OrientationHelper verticalHelper;
     private RecyclerView recyclerView;
 
-    ViewMeasureHelper(RecyclerView recyclerView) {
+    ViewSizeHelper(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
     }
 
@@ -67,22 +68,24 @@ public class ViewMeasureHelper {
                 layoutManager.canScrollVertically() ? recyclerView.getMeasuredWidth() : 0;
     }
 
-    public int getViewWidth(View view) {
+    public int getViewWidth(@Nullable View view) {
         OrientationHelper helper = getOrientationHelper(recyclerView.getLayoutManager());
         return view != null && helper != null ? helper.getDecoratedMeasurement(view) : 0;
     }
 
-    public int getViewStart(View view) {
+    public int getViewStart(@Nullable View view) {
         OrientationHelper helper = getOrientationHelper(recyclerView.getLayoutManager());
         return view != null && helper != null ? helper.getDecoratedStart(view) : 0;
     }
 
-    public int getViewEnd(View view) {
+    public int getViewEnd(@Nullable View view) {
         OrientationHelper helper = getOrientationHelper(recyclerView.getLayoutManager());
         return view != null && helper != null ? helper.getDecoratedEnd(view) : 0;
     }
 
-    public Rect getDrawBounds(View selectedView, View nextView, float positionOffset) {
+    public Rect getDrawBounds(@Nullable View selectedView, @Nullable View nextView,
+                              float positionOffset) {
+
         int selectViewStart = getViewStart(selectedView);
         int nextViewStart = getViewStart(nextView);
 
@@ -96,8 +99,9 @@ public class ViewMeasureHelper {
         return new Rect(left, top, right, bottom);
     }
 
-    public Rect getInternalBounds(View parentSelectedView, View parentNextView, View selectedView,
-                                  View nextView, float positionOffset) {
+    public Rect getChildDrawBounds(@Nullable View parentSelectedView, @Nullable View parentNextView,
+                                   @Nullable View selectedView, @Nullable View nextView,
+                                   float positionOffset) {
 
         int selectedChildLeft = selectedView == null ? 0 : selectedView.getLeft();
         int nextChildLeft = nextView == null ? 0 : nextView.getLeft();
