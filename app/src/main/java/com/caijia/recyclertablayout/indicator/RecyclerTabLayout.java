@@ -1,228 +1,103 @@
 package com.caijia.recyclertablayout.indicator;
 
+import android.annotation.TargetApi;
 import android.content.Context;
-import android.database.DataSetObserver;
-import android.graphics.Canvas;
-import android.graphics.Rect;
+import android.os.Build;
+import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.util.ArrayMap;
-import android.support.v4.view.PagerAdapter;
+import android.support.annotation.StyleRes;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.FrameLayout;
 
-import java.lang.ref.WeakReference;
-import java.util.Map;
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 /**
- * Created by cai.jia on 2017/5/16 0016
+ * Created by cai.jia on 2017/5/22 0022
  */
 
-public class RecyclerTabLayout extends RecyclerView {
+public class RecyclerTabLayout extends FrameLayout implements RecyclerTabContent.OnDrawListener {
 
-    private ViewPager viewPager;
-    private int position;
-    private float positionOffset;
-    private ViewSizeHelper measureHelper;
-    private PageAdapterChangeListener pageAdapterChangeListener;
-    private PageChangeListener pageChangeListener;
-    private TabAdapter tabAdapter;
-    private ArrayMap<PagerAdapter, DataSetObserver> pageDataObserverMap;
-    private TabLayoutAttribute attributeSet;
+    private TabIndicator tabIndicator;
+    private RecyclerTabContent tabContent;
+    private TabAttribute tabAttribute;
 
-    public RecyclerTabLayout(Context context) {
+    public RecyclerTabLayout(@NonNull Context context) {
         this(context, null);
     }
 
-    public RecyclerTabLayout(Context context, @Nullable AttributeSet attrs) {
+    public RecyclerTabLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RecyclerTabLayout(Context context, @Nullable AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        attributeSet = new TabLayoutAttribute(getContext(), attrs);
-        pageDataObserverMap = new ArrayMap<>();
-        measureHelper = new ViewSizeHelper(this);
-        pageAdapterChangeListener = new PageAdapterChangeListener();
-        pageChangeListener = new PageChangeListener(this);
+    public RecyclerTabLayout(@NonNull Context context, @Nullable AttributeSet attrs,
+                             @AttrRes int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init(context, attrs);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public RecyclerTabLayout(@NonNull Context context, @Nullable AttributeSet attrs,
+                             @AttrRes int defStyleAttr, @StyleRes int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init(context, attrs);
+    }
+
+    private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
+        tabContent = new RecyclerTabContent(getContext());
+        tabAttribute = new TabAttribute(context, attrs);
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        int childCount = getChildCount();
+        if (childCount > 1) {
+            throw new RuntimeException("only one child");
+        }
+
+        if (childCount == 1) {
+            View indicator = getChildAt(0);
+            if (!(indicator instanceof TabIndicator)) {
+                throw new RuntimeException("child is not implements TabIndicator");
+            }
+            tabIndicator = (TabIndicator) indicator;
+        }
+
+        addView(tabContent, 0, new FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT));
+        tabContent.setOnDrawListener(this);
     }
 
     public void setupWithViewPager(@NonNull ViewPager viewPager) {
         DefaultTabAdapter adapter = new DefaultTabAdapter(viewPager);
-        if (attributeSet != null) {
-            adapter.setAttribute(attributeSet);
-        }
         setupWithAdapter(adapter);
     }
 
     public void setupWithAdapter(@NonNull TabAdapter tabAdapter) {
-        ViewPager viewPager = tabAdapter.getViewPager();
-        if (viewPager == null) {
-            throw new RuntimeException("ViewPager is null ");
-        }
-        this.viewPager = viewPager;
-        this.tabAdapter = tabAdapter;
-        setAdapter(tabAdapter);
-        resetCallback(viewPager);
+        tabAdapter.setTabAttribute(tabAttribute);
+        tabContent.setupWithAdapter(tabAdapter);
     }
 
-    private void resetCallback(ViewPager viewPager) {
-        destroyViewPagerCallback(viewPager);
-        setupViewPagerCallback(viewPager);
+    public void setLayoutManager(LinearLayoutManager layoutManager) {
+        this.tabContent.setLayoutManager(layoutManager);
     }
 
     @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        destroyViewPagerCallback(viewPager);
-    }
-
-    private void destroyViewPagerCallback(ViewPager viewPager) {
-        if (viewPager == null) {
-            return;
-        }
-        this.viewPager = viewPager;
-        viewPager.removeOnPageChangeListener(pageChangeListener);
-        viewPager.removeOnAdapterChangeListener(pageAdapterChangeListener);
-
-        for (Map.Entry<PagerAdapter, DataSetObserver> entry : pageDataObserverMap.entrySet()) {
-            PagerAdapter adapter = entry.getKey();
-            DataSetObserver observer = entry.getValue();
-            if (adapter != null && observer != null) {
-                adapter.unregisterDataSetObserver(observer);
-            }
-        }
-        pageDataObserverMap.clear();
-    }
-
-    private void setupViewPagerCallback(ViewPager viewPager) {
-        if (viewPager == null) {
-            return;
-        }
-        viewPager.addOnPageChangeListener(pageChangeListener);
-        viewPager.addOnAdapterChangeListener(pageAdapterChangeListener);
-
-        PagerAdapter adapter = viewPager.getAdapter();
-        if (adapter != null && pageDataObserverMap.get(adapter) == null) {
-            PageDataObserver pageDataObserver = new PageDataObserver();
-            pageDataObserverMap.put(adapter, pageDataObserver);
-            adapter.registerDataSetObserver(pageDataObserver);
-        }
-    }
-
-    @NonNull
-    private LayoutManager checkLayoutManager() {
-        LayoutManager layoutManager = getLayoutManager();
-        if (layoutManager == null || !(layoutManager instanceof LinearLayoutManager)) {
-            throw new RuntimeException("layoutManager is null or layout is not LinearLayoutManager");
-        }
-        return layoutManager;
-    }
-
-    private void scrollToTab(int position, float positionOffset) {
-        this.position = position;
-        this.positionOffset = positionOffset;
-
-        LayoutManager layoutManager = checkLayoutManager();
-        LinearLayoutManager llManager = (LinearLayoutManager) layoutManager;
-
-        View selectedView = layoutManager.findViewByPosition(position);
-        View nextView = layoutManager.findViewByPosition(position + 1);
-
-        final int selectedWidth = measureHelper.getViewWidth(selectedView);
-        final int nextWidth = measureHelper.getViewWidth(nextView);
-
-        int centerOffset = Math.round((getWidth() - selectedWidth) * 0.5f);
-        int scrollOffset = (int) ((selectedWidth + nextWidth) * 0.5f * positionOffset);
-
-        stopScroll();
-        llManager.scrollToPositionWithOffset(position, centerOffset - scrollOffset);
-        invalidate();
-    }
-
-    @Override
-    public void draw(Canvas c) {
-        super.draw(c);
-        if (tabAdapter == null) {
-            return;
+    public void onDraw(ViewSizeHelper helper, @Nullable View selectedView, @Nullable View nextView,
+                       int position, float positionOffset) {
+        int tabId = 0;
+        int indicatorMode = TabAttribute.MODE_MATCH_PARENT;
+        if (tabAttribute != null) {
+            tabId = tabAttribute.getTabId();
+            indicatorMode = tabAttribute.getTabIndicatorMode();
         }
 
-        LayoutManager layoutManager = checkLayoutManager();
-        ViewHolder selectedViewHolder = findViewHolderForLayoutPosition(position);
-        ViewHolder nextViewHolder = findViewHolderForLayoutPosition(position + 1);
-
-        View selectedView = layoutManager.findViewByPosition(position);
-        View nextView = layoutManager.findViewByPosition(position + 1);
-        Rect bounds = measureHelper.getDrawBounds(selectedView, nextView, positionOffset);
-        tabAdapter.onDrawTabContent(c, measureHelper, selectedViewHolder, nextViewHolder,
-                position, positionOffset, bounds);
-    }
-
-    private static class PageChangeListener implements ViewPager.OnPageChangeListener {
-
-        private WeakReference<RecyclerTabLayout> ref;
-        private int scrollState;
-
-        PageChangeListener(RecyclerTabLayout tabLayout) {
-            ref = new WeakReference<>(tabLayout);
-        }
-
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-            RecyclerTabLayout tabLayout = ref.get();
-            if (tabLayout == null) {
-                return;
-            }
-            tabLayout.scrollToTab(position, positionOffset);
-        }
-
-        @Override
-        public void onPageSelected(int position) {
-            RecyclerTabLayout tabLayout = ref.get();
-            if (tabLayout == null) {
-                return;
-            }
-
-            if (scrollState == RecyclerView.SCROLL_STATE_IDLE) {
-                tabLayout.scrollToTab(position, 0);
-            }
-        }
-
-        @Override
-        public void onPageScrollStateChanged(int state) {
-            scrollState = state;
-        }
-    }
-
-    private class PageDataObserver extends DataSetObserver {
-
-        @Override
-        public void onChanged() {
-            getAdapter().notifyDataSetChanged();
-        }
-
-        @Override
-        public void onInvalidated() {
-            getAdapter().notifyDataSetChanged();
-        }
-    }
-
-    private class PageAdapterChangeListener implements ViewPager.OnAdapterChangeListener {
-
-        @Override
-        public void onAdapterChanged(@NonNull ViewPager viewPager,
-                                     @Nullable PagerAdapter oldAdapter,
-                                     @Nullable PagerAdapter newAdapter) {
-            if (RecyclerTabLayout.this.viewPager == viewPager) {
-                if (tabAdapter != null) {
-                    tabAdapter.updatePageAdapter(viewPager);
-                    RecyclerTabLayout.this.resetCallback(viewPager);
-                }
-                getAdapter().notifyDataSetChanged();
-            }
+        if (tabIndicator != null) {
+            tabIndicator.onDrawIndicator(helper, indicatorMode, tabId, selectedView, nextView,
+                    position, positionOffset);
         }
     }
 }
