@@ -11,7 +11,7 @@ import java.util.List;
  * Created by cai.jia on 2017/5/11 0011
  */
 
-public class ViewPagerAdapter extends FragmentStatePagerAdapter {
+public class ViewPagerAdapter extends FragmentStatePagerAdapter{
 
     private List<TestFragment> list;
 

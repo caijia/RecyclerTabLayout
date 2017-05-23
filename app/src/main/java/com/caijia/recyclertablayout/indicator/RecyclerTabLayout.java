@@ -72,11 +72,16 @@ public class RecyclerTabLayout extends FrameLayout implements RecyclerTabContent
     }
 
     public void setupWithViewPager(@NonNull ViewPager viewPager) {
-        DefaultTabAdapter adapter = new DefaultTabAdapter(viewPager);
+        RectTabAdapter adapter = new RectTabAdapter(viewPager);
         setupWithAdapter(adapter);
     }
 
     public void setupWithAdapter(@NonNull TabAdapter tabAdapter) {
+        int tabAdapterItemCount = tabAdapter.getItemCount();
+        int pageAdapterItemCount = tabAdapter.getViewPager().getAdapter().getCount();
+        if (tabAdapterItemCount != pageAdapterItemCount) {
+            throw new RuntimeException("tabAdapterItemCount is not equals pageAdapterItemCount");
+        }
         tabAdapter.setTabAttribute(tabAttribute);
         tabContent.setupWithAdapter(tabAdapter);
     }

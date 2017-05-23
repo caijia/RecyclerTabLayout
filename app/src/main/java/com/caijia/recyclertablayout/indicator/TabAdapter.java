@@ -11,7 +11,5 @@ public abstract class TabAdapter<VH extends RecyclerView.ViewHolder> extends Rec
 
     public abstract ViewPager getViewPager();
 
-    public abstract void updatePageAdapter(ViewPager viewPager);
-
     public abstract void setTabAttribute(TabAttribute tabAttribute);
 }

@@ -33,7 +33,7 @@ public class TabAttribute {
     public static final int MODE_FIXED = 0;
 
     /**
-     * Tab宽度有内容决定
+     * Tab宽度由内容决定
      */
     public static final int MODE_SCROLLABLE = 1;
     private int tabPaddingStart;
@@ -64,7 +64,7 @@ public class TabAttribute {
                     R.styleable.RecyclerTabContent_recyclerTabWidthPercent, 0f);
             tabBackground = a.getResourceId(
                     R.styleable.RecyclerTabContent_recyclerTabBackground, 0);
-            tabId = a.getResourceId(R.styleable.RecyclerTabContent_recyclerTabId, 0);
+            tabId = a.getResourceId(R.styleable.RecyclerTabContent_recyclerTabId, R.id.default_tab_text);
             tabMode = a.getInt(R.styleable.RecyclerTabContent_recyclerTabWidthMode, MODE_FIXED);
             tabIndicatorMode = a.getInt(
                     R.styleable.RecyclerTabContent_recyclerTabIndicatorWidthMode, MODE_MATCH_PARENT);

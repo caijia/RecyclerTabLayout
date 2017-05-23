@@ -9,9 +9,7 @@
         android:id="@+id/tab_layout"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        app:recyclerTabId="@+id/text"
-        app:recyclerTabIndicatorWidthMode="wrapContent"
-        >
+        app:recyclerTabIndicatorWidthMode="wrapContent">
 
         <com.caijia.recyclertablayout.indicator.RectTabIndicator
             android:layout_width="match_parent"

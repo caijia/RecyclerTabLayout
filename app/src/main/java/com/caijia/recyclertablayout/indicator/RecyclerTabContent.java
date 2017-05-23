@@ -212,7 +212,6 @@ public class RecyclerTabContent extends RecyclerView {
                                      @Nullable PagerAdapter newAdapter) {
             if (RecyclerTabContent.this.viewPager == viewPager) {
                 if (tabAdapter != null) {
-                    tabAdapter.updatePageAdapter(viewPager);
                     RecyclerTabContent.this.resetCallback(viewPager);
                 }
                 getAdapter().notifyDataSetChanged();
