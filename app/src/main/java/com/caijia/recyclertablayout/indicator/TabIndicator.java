@@ -4,6 +4,9 @@ import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.view.View;
 
+import com.caijia.recyclertablayout.indicator.utils.ViewFinder;
+import com.caijia.recyclertablayout.indicator.utils.ViewSizeHelper;
+
 /**
  * Created by cai.jia on 2017/5/22 0022
  */

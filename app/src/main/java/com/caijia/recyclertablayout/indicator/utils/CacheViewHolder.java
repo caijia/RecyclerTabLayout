@@ -1,4 +1,4 @@
-package com.caijia.recyclertablayout.indicator;
+package com.caijia.recyclertablayout.indicator.utils;
 
 import android.support.annotation.IdRes;
 import android.support.v7.widget.RecyclerView;

@@ -1,4 +1,4 @@
-package com.caijia.recyclertablayout.indicator;
+package com.caijia.recyclertablayout.indicator.utils;
 
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
@@ -19,7 +19,7 @@ public class ViewSizeHelper {
     private OrientationHelper verticalHelper;
     private RecyclerView recyclerView;
 
-    ViewSizeHelper(RecyclerView recyclerView) {
+    public ViewSizeHelper(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
     }
 

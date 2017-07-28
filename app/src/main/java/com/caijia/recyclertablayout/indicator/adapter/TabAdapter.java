@@ -1,7 +1,9 @@
-package com.caijia.recyclertablayout.indicator;
+package com.caijia.recyclertablayout.indicator.adapter;
 
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
+
+import com.caijia.recyclertablayout.indicator.TabAttribute;
 
 /**
  * Created by cai.jia on 2017/5/18 0018

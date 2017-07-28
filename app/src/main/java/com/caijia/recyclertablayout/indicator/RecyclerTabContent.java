@@ -13,6 +13,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.caijia.recyclertablayout.indicator.adapter.TabAdapter;
+import com.caijia.recyclertablayout.indicator.utils.ViewSizeHelper;
+
 import java.lang.ref.WeakReference;
 import java.util.Map;
 

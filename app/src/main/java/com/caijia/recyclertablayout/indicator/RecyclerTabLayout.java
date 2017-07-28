@@ -13,6 +13,10 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.caijia.recyclertablayout.indicator.adapter.RectTabAdapter;
+import com.caijia.recyclertablayout.indicator.adapter.TabAdapter;
+import com.caijia.recyclertablayout.indicator.utils.ViewSizeHelper;
+
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 /**

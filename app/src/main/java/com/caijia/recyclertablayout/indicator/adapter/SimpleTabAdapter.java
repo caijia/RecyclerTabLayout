@@ -1,4 +1,4 @@
-package com.caijia.recyclertablayout.indicator;
+package com.caijia.recyclertablayout.indicator.adapter;
 
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -7,6 +7,9 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.caijia.recyclertablayout.indicator.TabAttribute;
+import com.caijia.recyclertablayout.indicator.utils.CacheViewHolder;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
