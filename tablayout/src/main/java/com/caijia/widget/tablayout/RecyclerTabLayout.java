@@ -1,8 +1,9 @@
-package com.caijia.recyclertablayout;
+package com.caijia.widget.tablayout;
 
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,9 +15,9 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.caijia.recyclertablayout.indicator.TabIndicator;
-
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by cai.jia on 2017/5/16 0016
@@ -48,6 +49,7 @@ public class RecyclerTabLayout extends RecyclerView {
         super(context, attrs, defStyle);
         pageAdapterChangeListener = new PageAdapterChangeListener();
         pageChangeListener = new PageChangeListener(this);
+        tabIndicator = new RectTabIndicator(context,3,0, Color.CYAN);
     }
 
     public void setupWithViewPager(ViewPager viewPager) {
@@ -88,6 +90,40 @@ public class RecyclerTabLayout extends RecyclerView {
             pageDataObserver = new PageDataObserver();
             adapter.registerDataSetObserver(pageDataObserver);
         }
+
+        setRecyclerAdapter(adapter);
+    }
+
+    private void setRecyclerAdapter(PagerAdapter adapter) {
+        if (adapter == null) {
+            return;
+        }
+
+        CustomTab tab;
+        if (adapter instanceof CustomTab) {
+            tab = (CustomTab) adapter;
+
+        } else {
+            List<TabData> dataList = new ArrayList<>();
+            int count = adapter.getCount();
+
+            TabDataFactory factory = null;
+            if (adapter instanceof TabDataFactory) {
+                factory = (TabDataFactory) adapter;
+            }
+
+            for (int i = 0; i < count; i++) {
+                TabData tabData = factory != null
+                        ? factory.getTabData(i)
+                        : new StringTabData(adapter.getPageTitle(i).toString());
+                dataList.add(tabData);
+            }
+            tab = new DefaultTab(dataList);
+        }
+
+        RecyclerTabAdapter tabAdapter = new RecyclerTabAdapter(tab);
+        setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        setAdapter(tabAdapter);
     }
 
     private OrientationHelper getOrientationHelper(LayoutManager layoutManager) {
@@ -185,8 +221,8 @@ public class RecyclerTabLayout extends RecyclerView {
     }
 
     @Override
-    public void onDraw(Canvas c) {
-        super.onDraw(c);
+    public void draw(Canvas c) {
+        super.draw(c);
         if (tabIndicator == null) {
             return;
         }

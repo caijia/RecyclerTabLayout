@@ -1,4 +1,4 @@
-package com.caijia.recyclertablayout.indicator;
+package com.caijia.widget.tablayout;
 
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -6,8 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-
-import com.caijia.recyclertablayout.RecyclerTabLayout;
 
 public interface TabIndicator {
 
