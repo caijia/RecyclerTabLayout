@@ -1,6 +1,8 @@
 package com.caijia.widget.tablayout;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
 import android.database.DataSetObserver;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -13,6 +15,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
 
 import java.lang.ref.WeakReference;
@@ -23,19 +27,27 @@ import java.util.List;
  * Created by cai.jia on 2017/5/16 0016
  */
 
-public class RecyclerTabLayout extends RecyclerView {
+public class RecyclerTabLayout extends RecyclerView implements OnTabClickListener {
 
+    private static final int MODE_FIXED = 1;
+    private static final int MODE_SCROLL = 2;
     private ViewPager viewPager;
-
     private int position;
     private float positionOffset;
     private OrientationHelper horizontalHelper;
     private OrientationHelper verticalHelper;
-
     private PageDataObserver pageDataObserver;
     private PageAdapterChangeListener pageAdapterChangeListener;
     private PageChangeListener pageChangeListener;
     private TabIndicator tabIndicator;
+
+    private int tabWidth;
+    private int tabBackground;
+    private int scrollMode;
+    private ColorStateList textColorStateList;
+    private int customIndicatorId;
+    private LineItemDecoration itemDecoration;
+    private RecyclerAdapterWrapper tabAdapter;
 
     public RecyclerTabLayout(Context context) {
         this(context, null);
@@ -49,7 +61,81 @@ public class RecyclerTabLayout extends RecyclerView {
         super(context, attrs, defStyle);
         pageAdapterChangeListener = new PageAdapterChangeListener();
         pageChangeListener = new PageChangeListener(this);
-        tabIndicator = new RectTabIndicator(context,3,0, Color.CYAN);
+        getViewAttribute(context, attrs);
+    }
+
+    private static ColorStateList createColorStateList(int defaultColor, int selectedColor) {
+        final int[][] states = new int[2][];
+        final int[] colors = new int[2];
+        int i = 0;
+
+        states[i] = View.SELECTED_STATE_SET;
+        colors[i] = selectedColor;
+        i++;
+
+        // Default enabled state
+        states[i] = View.EMPTY_STATE_SET;
+        colors[i] = defaultColor;
+        return new ColorStateList(states, colors);
+    }
+
+    private void getViewAttribute(Context context, AttributeSet attrs) {
+        TypedArray a = null;
+        try {
+            a = context.obtainStyledAttributes(attrs, R.styleable.RecyclerTabLayout);
+            boolean hasDivider = a.getBoolean(R.styleable.RecyclerTabLayout_rTabHasDivider, true);
+            int dividerWidth = a.getDimensionPixelOffset(R.styleable.RecyclerTabLayout_rTabDividerWidth, 0);
+            int dividerPadding = a.getDimensionPixelOffset(R.styleable.RecyclerTabLayout_rTabDividerPadding, 0);
+            int dividerColor = a.getColor(R.styleable.RecyclerTabLayout_rTabDividerColor, Color.BLACK);
+            tabWidth = a.getDimensionPixelOffset(R.styleable.RecyclerTabLayout_rTabWidth, 0);
+            boolean hasIndicator = a.getBoolean(R.styleable.RecyclerTabLayout_rTabHasIndicator, true);
+            int indicatorColor = a.getColor(R.styleable.RecyclerTabLayout_rTabIndicatorColor, Color.RED);
+            int indicatorWidth = a.getDimensionPixelOffset(R.styleable.RecyclerTabLayout_rTabIndicatorWidth, dpToPx(2));
+            int indicatorHeight = a.getDimensionPixelOffset(R.styleable.RecyclerTabLayout_rTabIndicatorHeight, dpToPx(2));
+            tabBackground = a.getResourceId(R.styleable.RecyclerTabLayout_rTabBackground, 0);
+            customIndicatorId = a.getResourceId(R.styleable.RecyclerTabLayout_rTabCustomIndicatorId, -1);
+            scrollMode = a.getInt(R.styleable.RecyclerTabLayout_rTabScrollMode, MODE_SCROLL);
+            int selectedColor = a.getColor(R.styleable.RecyclerTabLayout_rTabSelectColor, Color.RED);
+            int normalColor = a.getColor(R.styleable.RecyclerTabLayout_rTabNormalColor, Color.BLACK);
+            textColorStateList = createColorStateList(normalColor, selectedColor);
+
+            if (hasDivider) {
+                itemDecoration = new LineItemDecoration(LineItemDecoration.HORIZONTAL,
+                        dividerWidth, dividerPadding, dividerColor);
+            }
+
+            if (customIndicatorId == -1) {
+                tabIndicator = new RectTabIndicator(context, hasIndicator, indicatorWidth,
+                        indicatorHeight, 0, indicatorColor);
+            }
+
+        } finally {
+            if (a != null) {
+                a.recycle();
+            }
+        }
+    }
+
+    private int dpToPx(int value) {
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value,
+                getContext().getResources().getDisplayMetrics()));
+    }
+
+    private int spToPx(int sp) {
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+                sp, getResources().getDisplayMetrics()));
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        if (customIndicatorId != -1) {
+            View customIndicatorView = LayoutInflater.from(getContext())
+                    .inflate(customIndicatorId, this, false);
+
+            if (customIndicatorView != null && customIndicatorView instanceof TabIndicator)
+                tabIndicator = (TabIndicator) customIndicatorView;
+        }
     }
 
     public void setupWithViewPager(ViewPager viewPager) {
@@ -91,39 +177,46 @@ public class RecyclerTabLayout extends RecyclerView {
             adapter.registerDataSetObserver(pageDataObserver);
         }
 
-        setRecyclerAdapter(adapter);
+        createOrRecycleTab(adapter);
     }
 
-    private void setRecyclerAdapter(PagerAdapter adapter) {
+    private void updateTab() {
+        if (viewPager != null) {
+            createOrRecycleTab(viewPager.getAdapter());
+        }
+    }
+
+    private void createOrRecycleTab(PagerAdapter adapter) {
         if (adapter == null) {
             return;
         }
 
-        CustomTab tab;
-        if (adapter instanceof CustomTab) {
-            tab = (CustomTab) adapter;
+        tabAdapter = new RecyclerAdapterWrapper<>(pageAdapterToRecyclerAdapter(adapter));
+        setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        if (itemDecoration != null) {
+            addItemDecoration(itemDecoration);
+        }
+        tabAdapter.setTabClickListener(this);
+        swapAdapter(tabAdapter, true);
+    }
 
-        } else {
-            List<TabData> dataList = new ArrayList<>();
-            int count = adapter.getCount();
+    private RecyclerView.Adapter<DefaultTabAdapter.DefaultTabViewHolder> pageAdapterToRecyclerAdapter(PagerAdapter pagerAdapter) {
+        List<TabData> dataList = new ArrayList<>();
+        int count = pagerAdapter.getCount();
 
-            TabDataFactory factory = null;
-            if (adapter instanceof TabDataFactory) {
-                factory = (TabDataFactory) adapter;
-            }
-
-            for (int i = 0; i < count; i++) {
-                TabData tabData = factory != null
-                        ? factory.getTabData(i)
-                        : new StringTabData(adapter.getPageTitle(i).toString());
-                dataList.add(tabData);
-            }
-            tab = new DefaultTab(dataList);
+        TabDataFactory factory = null;
+        if (pagerAdapter instanceof TabDataFactory) {
+            factory = (TabDataFactory) pagerAdapter;
         }
 
-        RecyclerTabAdapter tabAdapter = new RecyclerTabAdapter(tab);
-        setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        setAdapter(tabAdapter);
+        for (int i = 0; i < count; i++) {
+            CharSequence pageTitle = pagerAdapter.getPageTitle(i);
+            TabData tabData = factory != null
+                    ? factory.getTabData(i)
+                    : new SimpleTabData(pageTitle == null ? "" : pageTitle.toString());
+            dataList.add(tabData);
+        }
+        return new DefaultTabAdapter(dataList, tabWidth, tabBackground, textColorStateList);
     }
 
     private OrientationHelper getOrientationHelper(LayoutManager layoutManager) {
@@ -213,7 +306,6 @@ public class RecyclerTabLayout extends RecyclerView {
 
         stopScroll();
         llManager.scrollToPositionWithOffset(position, centerOffset - scrollOffset);
-        invalidate();
     }
 
     public void setTabIndicator(TabIndicator tabIndicator) {
@@ -257,6 +349,19 @@ public class RecyclerTabLayout extends RecyclerView {
         return new Rect(left, top, right, bottom);
     }
 
+    @Override
+    public void onTabClick(View view, int position) {
+        if (viewPager != null) {
+            viewPager.setCurrentItem(position);
+        }
+    }
+
+    private void setTabSelectedItem(int position) {
+        if (tabAdapter != null) {
+            tabAdapter.setSelectPosition(position);
+        }
+    }
+
     private static class PageChangeListener implements ViewPager.OnPageChangeListener {
 
         private WeakReference<RecyclerTabLayout> ref;
@@ -282,6 +387,7 @@ public class RecyclerTabLayout extends RecyclerView {
                 return;
             }
 
+            tabLayout.setTabSelectedItem(position);
             if (scrollState == RecyclerView.SCROLL_STATE_IDLE) {
                 tabLayout.scrollToTab(position, 0);
             }
@@ -297,12 +403,12 @@ public class RecyclerTabLayout extends RecyclerView {
 
         @Override
         public void onChanged() {
-
+            updateTab();
         }
 
         @Override
         public void onInvalidated() {
-
+            updateTab();
         }
     }
 
@@ -313,7 +419,7 @@ public class RecyclerTabLayout extends RecyclerView {
                                      @Nullable PagerAdapter oldAdapter,
                                      @Nullable PagerAdapter newAdapter) {
             if (RecyclerTabLayout.this.viewPager == viewPager) {
-
+                updateTab();
             }
         }
     }

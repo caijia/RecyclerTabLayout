@@ -5,11 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.support.annotation.ColorInt;
-import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.util.TypedValue;
 
 /**
  * Created by cai.jia on 2017/5/17 0017
@@ -19,31 +17,29 @@ public class RectTabIndicator implements TabIndicator {
 
     private Paint paint;
 
+    private boolean hasIndicator;
+
     /**
      * 指示器高度
      */
     private int indicatorHeight;
+
+    private int indicatorWidth;
 
     /**
      * 指示器左右padding
      */
     private int paddingLR;
 
-    /**
-     * 指示器的宽度变化根据该ViewId决定
-     */
-    private
-    @IdRes
-    int anchorId;
-
-    public RectTabIndicator(Context context, float indicatorHeightDip,
-                            float indicatorPaddingLR,
-                            @ColorInt int indicatorColor) {
+    public RectTabIndicator(Context context, boolean hasIndicator,int indicatorWidth,
+                            int indicatorHeight, int paddingLR, @ColorInt int indicatorColor) {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setAntiAlias(true);
         paint.setColor(indicatorColor);
-        paddingLR = dpToPx(context, indicatorPaddingLR);
-        indicatorHeight = dpToPx(context, indicatorHeightDip);
+        this.hasIndicator = hasIndicator;
+        this.paddingLR = paddingLR;
+        this.indicatorWidth = indicatorWidth;
+        this.indicatorHeight = indicatorHeight;
     }
 
     @Override
@@ -63,11 +59,6 @@ public class RectTabIndicator implements TabIndicator {
                                    @Nullable RecyclerView.ViewHolder selectedViewHolder,
                                    @Nullable RecyclerView.ViewHolder nextViewHolder,
                                    int position, float positionOffset) {
-        return true;
-    }
-
-    private int dpToPx(Context context, float dip) {
-        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dip,
-                context.getResources().getDisplayMetrics()));
+        return hasIndicator;
     }
 }

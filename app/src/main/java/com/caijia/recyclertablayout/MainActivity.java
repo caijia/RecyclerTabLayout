@@ -8,8 +8,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.caijia.widget.tablayout.RecyclerTabLayout;
-import com.caijia.widget.tablayout.TabData;
-import com.caijia.widget.tablayout.TabDataFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,16 +23,17 @@ public class MainActivity extends AppCompatActivity {
         ViewPager viewPager = findViewById(R.id.view_pager);
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);
+//        tabLayout.setupWithViewPager(viewPager);
     }
 
-    public class ViewPagerAdapter extends FragmentPagerAdapter implements TabDataFactory{
+    public class ViewPagerAdapter extends FragmentPagerAdapter {
 
         private List<TestFragment> list;
 
         public ViewPagerAdapter(FragmentManager fm) {
             super(fm);
             list = new ArrayList<>();
-            for (int i = 0; i < 15; i++) {
+            for (int i = 0; i < 5; i++) {
                 list.add(TestFragment.getInstance(i));
             }
         }
@@ -50,25 +49,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public TabData getTabData(final int position) {
-            return new TabData() {
-                @Override
-                public String getTabTitle() {
-                    return "item" + position;
-                }
-
-                @Override
-                public int getTabIcon() {
-                    return 0;
-                }
-            };
+        public CharSequence getPageTitle(int position) {
+            return "item" + position;
         }
-
-//        @Override
-//        public CharSequence getPageTitle(int position) {
-//            return "item" + position;
-//        }
-
     }
 }
 
