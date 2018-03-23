@@ -21,12 +21,22 @@ class DefaultTabAdapter extends RecyclerView.Adapter<DefaultTabAdapter.DefaultTa
     private int tabWidth;
     private int tabBackground;
     private ColorStateList colorStateList;
+    private int scrollMode;
+    private int tabPaddingSpace;
+    private int orientation;
+    private int dividerWidth;
 
-    public DefaultTabAdapter(List<? extends TabData> dataList,int tabWidth, int tabBackground, ColorStateList colorStateList) {
+    public DefaultTabAdapter(List<? extends TabData> dataList, int tabWidth, int tabBackground,
+                             ColorStateList colorStateList, int scrollMode, int tabPaddingSpace,
+                             int orientation, int dividerWidth) {
         this.dataList = dataList;
         this.tabWidth = tabWidth;
         this.tabBackground = tabBackground;
         this.colorStateList = colorStateList;
+        this.scrollMode = scrollMode;
+        this.tabPaddingSpace = tabPaddingSpace;
+        this.orientation = orientation;
+        this.dividerWidth = dividerWidth;
     }
 
     @Override
@@ -39,7 +49,10 @@ class DefaultTabAdapter extends RecyclerView.Adapter<DefaultTabAdapter.DefaultTa
     public DefaultTabViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_text_view, parent, false);
-        return new DefaultTabViewHolder(view);
+        if (scrollMode == RecyclerTabLayout.MODE_FIXED) {
+            tabWidth = (parent.getMeasuredWidth() - dividerWidth * dataList.size() - 1) / dataList.size();
+        }
+        return new DefaultTabViewHolder(view,tabPaddingSpace);
     }
 
     @Override
@@ -63,8 +76,9 @@ class DefaultTabAdapter extends RecyclerView.Adapter<DefaultTabAdapter.DefaultTa
 
         private TextView textView;
 
-        DefaultTabViewHolder(View itemView) {
+        DefaultTabViewHolder(View itemView, int tabPaddingSpace) {
             super(itemView);
+            itemView.setPadding(tabPaddingSpace, 0, tabPaddingSpace, 0);
             textView = itemView.findViewById(R.id.text);
         }
     }

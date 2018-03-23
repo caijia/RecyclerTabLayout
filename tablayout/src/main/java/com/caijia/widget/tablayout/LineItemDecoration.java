@@ -16,19 +16,21 @@ class LineItemDecoration extends RecyclerView.ItemDecoration {
     private final Rect mBounds = new Rect();
 
     private int mOrientation;
-    private int spacing;
-    private Paint paint;
+    private int dividerWidth;
+    private int dividerHeight;
     private int padding;
+    private Paint paint;
 
     /**
-     * @param orientation Divider orientation
-     * @param spacing     Divider spacing
-     * @param padding     Divider padding
-     * @param color       Divider color
+     * @param orientation  Divider orientation
+     * @param dividerWidth Divider width
+     * @param padding      Divider padding
+     * @param color        Divider color
      */
-    public LineItemDecoration(int orientation, int spacing, int padding, @ColorInt int color) {
+    public LineItemDecoration(int orientation, int dividerWidth, int dividerHeight,int padding, @ColorInt int color) {
         setOrientation(orientation);
-        this.spacing = spacing;
+        this.dividerWidth = dividerWidth;
+        this.dividerHeight = dividerHeight;
         this.padding = padding;
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setAntiAlias(true);
@@ -49,14 +51,14 @@ class LineItemDecoration extends RecyclerView.ItemDecoration {
             return;
         }
         if (mOrientation == VERTICAL) {
-            drawVertical(c, parent, state);
+            drawHorizontalLine(c, parent, state);
         } else {
-            drawHorizontal(c, parent, state);
+            drawVerticalLine(c, parent, state);
         }
     }
 
     @SuppressLint("NewApi")
-    private void drawVertical(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
+    private void drawHorizontalLine(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
         canvas.save();
         final int left;
         final int right;
@@ -75,14 +77,20 @@ class LineItemDecoration extends RecyclerView.ItemDecoration {
             final View child = parent.getChildAt(i);
             parent.getDecoratedBoundsWithMargins(child, mBounds);
             final int bottom = mBounds.bottom + Math.round(child.getTranslationY());
-            final int top = bottom - spacing;
-            canvas.drawRect(left + padding, top, right - padding, bottom, paint);
+            final int top = bottom - dividerWidth;
+            if (dividerHeight == 0) {
+                canvas.drawRect(left + padding, top, right - padding, bottom, paint);
+                
+            }else{
+                int halfRemainingSpace = (mBounds.width() - dividerHeight) / 2;
+                canvas.drawRect(left + halfRemainingSpace, top, right - halfRemainingSpace, bottom, paint);
+            }
         }
         canvas.restore();
     }
 
     @SuppressLint("NewApi")
-    private void drawHorizontal(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
+    private void drawVerticalLine(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
         canvas.save();
         final int top;
         final int bottom;
@@ -101,8 +109,14 @@ class LineItemDecoration extends RecyclerView.ItemDecoration {
             final View child = parent.getChildAt(i);
             parent.getLayoutManager().getDecoratedBoundsWithMargins(child, mBounds);
             final int right = mBounds.right + Math.round(child.getTranslationX());
-            final int left = right - spacing;
-            canvas.drawRect(left, top + padding, right, bottom - padding, paint);
+            final int left = right - dividerWidth;
+            if (dividerHeight == 0) {
+                canvas.drawRect(left, top + padding, right, bottom - padding, paint);
+                
+            }else{
+                int halfRemainingSpace = (mBounds.height() - dividerHeight) / 2;
+                canvas.drawRect(left, top + halfRemainingSpace, right, bottom - halfRemainingSpace, paint);
+            }
         }
         canvas.restore();
     }
@@ -111,9 +125,9 @@ class LineItemDecoration extends RecyclerView.ItemDecoration {
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
                                RecyclerView.State state) {
         if (mOrientation == VERTICAL) {
-            outRect.set(0, 0, 0, spacing);
+            outRect.set(0, 0, 0, dividerWidth);
         } else {
-            outRect.set(0, 0, spacing, 0);
+            outRect.set(0, 0, dividerWidth, 0);
         }
     }
 }

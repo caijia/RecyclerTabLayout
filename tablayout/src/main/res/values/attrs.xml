@@ -2,8 +2,10 @@
 <resources>
     <declare-styleable name="RecyclerTabLayout">
         <attr name="android:textSize" />
+        <attr name="rTabSelectTextSize" format="dimension"/>
         <attr name="rTabHasDivider" format="boolean" />
         <attr name="rTabDividerWidth" format="dimension" />
+        <attr name="rTabDividerHeight" format="dimension" />
         <attr name="rTabDividerPadding" format="dimension" />
         <attr name="rTabDividerColor" format="color" />
         <attr name="rTabWidth" format="dimension" />
@@ -11,7 +13,12 @@
         <attr name="rTabIndicatorColor" format="color" />
         <attr name="rTabIndicatorWidth" format="dimension" />
         <attr name="rTabIndicatorHeight" format="dimension" />
+        <attr name="rTabPaddingSpace" format="dimension" />
         <attr name="rTabBackground" format="reference" />
+        <attr name="rTabOrientation">
+            <enum name="horizontal" value="1" />
+            <enum name="vertical" value="2" />
+        </attr>
         <attr name="rTabCustomIndicatorId" format="reference" />
         <attr name="rTabScrollMode">
             <enum name="fixed" value="1" />

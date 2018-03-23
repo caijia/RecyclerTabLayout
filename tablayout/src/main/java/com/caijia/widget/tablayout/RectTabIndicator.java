@@ -26,20 +26,18 @@ public class RectTabIndicator implements TabIndicator {
 
     private int indicatorWidth;
 
-    /**
-     * 指示器左右padding
-     */
-    private int paddingLR;
+    private int orientation;
 
-    public RectTabIndicator(Context context, boolean hasIndicator,int indicatorWidth,
-                            int indicatorHeight, int paddingLR, @ColorInt int indicatorColor) {
+    public RectTabIndicator(Context context, int orientation, boolean hasIndicator,
+                            int indicatorWidth, int indicatorHeight,
+                            @ColorInt int indicatorColor) {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setAntiAlias(true);
         paint.setColor(indicatorColor);
         this.hasIndicator = hasIndicator;
-        this.paddingLR = paddingLR;
         this.indicatorWidth = indicatorWidth;
         this.indicatorHeight = indicatorHeight;
+        this.orientation = orientation;
     }
 
     @Override
@@ -47,11 +45,21 @@ public class RectTabIndicator implements TabIndicator {
                               @Nullable RecyclerView.ViewHolder selectedViewHolder,
                               @Nullable RecyclerView.ViewHolder nextViewHolder,
                               int position, float positionOffset, @NonNull Rect drawBounds) {
-        canvas.drawRect(
-                drawBounds.left + paddingLR,
-                drawBounds.bottom - indicatorHeight,
-                drawBounds.right - paddingLR,
-                drawBounds.bottom, paint);
+        switch (orientation) {
+            case RecyclerTabLayout.HORIZONTAL: {
+                int halfRemaining = (drawBounds.width() - indicatorWidth) / 2;
+                int left = indicatorWidth > 0 ? drawBounds.left + halfRemaining : drawBounds.left;
+                int top = drawBounds.bottom - indicatorHeight;
+                int right = indicatorWidth > 0 ? drawBounds.right - halfRemaining : drawBounds.right;
+                canvas.drawRect(left, top, right, drawBounds.bottom, paint);
+                break;
+            }
+
+            case RecyclerTabLayout.VERTICAL:
+
+                break;
+        }
+
     }
 
     @Override
